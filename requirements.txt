@@ -1,0 +1,5 @@
+prefect>=2
+polars
+deltalake
+duckdb
+s3fs
