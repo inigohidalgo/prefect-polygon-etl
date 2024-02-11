@@ -3,3 +3,4 @@ polars
 deltalake
 duckdb
 s3fs
+polygon-api-client
