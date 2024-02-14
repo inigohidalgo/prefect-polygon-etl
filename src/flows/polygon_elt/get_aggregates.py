@@ -20,20 +20,6 @@ def get_daily_data(ticker, date_from, date_to, client: RESTClient):
 
 
 
-raw_fs = s3fs.S3FileSystem(
-    key=pfbs.Secret.load("minio-access-key").get(),
-    secret=pfbs.Secret.load("minio-secret-key").get(),
-    client_kwargs={"endpoint_url": "http://localhost:9000"},
-)
-
-
-pl_s3_delta_config = {
-    "endpoint": "http://localhost:9000",
-    "access_key": pfbs.Secret.load("minio-access-key").get(),
-    "secret_key": pfbs.Secret.load("minio-secret-key").get(),
-    "region": "us-east-1",
-    "allow_http": True,
-}
 
 
 def aggregations_to_bronze(aggregations, ticker):
@@ -47,6 +33,15 @@ def aggregations_to_bronze(aggregations, ticker):
 
 @pf.flow
 def get_aggregates(ticker, date_from: datetime.date, date_to: datetime.date, container: str = "etl/polygon/raw"):
+
+    pl_s3_delta_config = {
+        "endpoint": "http://localhost:9000",
+        "access_key": pfbs.Secret.load("minio-access-key").get(),
+        "secret_key": pfbs.Secret.load("minio-secret-key").get(),
+        "region": "us-east-1",
+        "allow_http": True,
+    }
+
     logger = pf.get_run_logger()
     client = get_polygon_client()
     daily_aggs = get_daily_data(ticker, date_from, date_to, client)
