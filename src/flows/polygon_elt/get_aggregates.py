@@ -8,6 +8,7 @@ from polygon import RESTClient
 import prefect.blocks.system as pfbs
 import s3fs
 import polars as pl
+from delta_rs_etl.upsert import upsert
 
 from enum import Enum
 
