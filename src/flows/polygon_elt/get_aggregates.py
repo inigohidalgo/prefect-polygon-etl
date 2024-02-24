@@ -126,8 +126,6 @@ def aggregates_raw_to_silver(ticker, date_from: datetime.date, date_to: datetime
     aggregates_save_silver(aggregates_silver, ticker, date_from, date_to, container + "silver")
 
 if __name__=="__main__":
-    pf.serve(
-        aggregates_raw_to_bronze.to_deployment(name="aggregates-raw-to-bronze"),
-        aggregates_bronze_to_silver.to_deployment(name="aggregates-bronze-to-silver"),
-        aggregates_raw_to_silver.to_deployment(name="aggregates-raw-to-silver"),
-    )
+    date_to = datetime.date.today()
+    date_from = date_to - datetime.timedelta(days=30)
+    aggregates_raw_to_silver("AAPL", date_from, date_to)
