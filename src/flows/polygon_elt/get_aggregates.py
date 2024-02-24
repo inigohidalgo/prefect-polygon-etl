@@ -1,7 +1,7 @@
 import json
 
 import prefect as pf
-from .client import get_polygon_client
+from polygon_api.client import get_polygon_client
 import datetime
 import datetime
 from polygon import RESTClient
@@ -103,14 +103,17 @@ def aggregates_transform_bronze_to_silver(aggregates):
 @pf.task
 def aggregates_save_silver(aggregates, ticker, date_from, date_to, container: str = "etl/polygon/silver"):
     s3_path_silver = f"s3://{container}/daily_aggs/"
+    pf.get_run_logger().info(f"Saving {len(aggregates)} records to {s3_path_silver}")
     try:
         dt = DeltaTable(s3_path_silver, storage_options=pl_s3_delta_config)
         upsert(aggregates.to_arrow(), dt, ["ticker", "timestamp"])
+        pf.get_run_logger().info(f"Upserted {len(aggregates)} records to {s3_path_silver}")
     except Exception as e:
         if "no log files" in str(e):
             logger = pf.get_run_logger()
             logger.info("No log files found, creating new DeltaTable")
             write_deltalake(s3_path_silver, storage_options=pl_s3_delta_config, data=aggregates.to_arrow())
+            dt = DeltaTable(s3_path_silver, storage_options=pl_s3_delta_config)
     return dt
 
 
