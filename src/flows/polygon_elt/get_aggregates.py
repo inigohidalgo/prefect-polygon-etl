@@ -57,7 +57,9 @@ def get_aggregates(ticker, date_from: datetime.date, date_to: datetime.date, con
 
     daily_aggs_pl.write_parquet(
         f"s3://{container}/{ticker}/daily_aggs/{date_from}_{date_to}.parquet",
-        **pl_s3_delta_config
+        use_pyarrow=True,
+        pyarrow_options={"filesystem": raw_fs},
+
     )
 
 
