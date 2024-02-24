@@ -29,15 +29,16 @@ raw_fs = s3fs.S3FileSystem(
 
 
 pl_s3_delta_config = {
-    "endpoint": "http://localhost:9000",
+    "aws_endpoint": "http://localhost:9000",
     "access_key": pfbs.Secret.load("minio-access-key").get(),
     "secret_key": pfbs.Secret.load("minio-secret-key").get(),
     "region": "us-east-1",
     "allow_http": True,
 }
 
-
+@pf.task
 def aggregations_to_bronze(aggregations, ticker):
+    """Add query metadata to the table"""
     return (
         pl.DataFrame(aggregations)
         .with_columns(
@@ -47,7 +48,7 @@ def aggregations_to_bronze(aggregations, ticker):
         )
 
 @pf.flow
-def get_aggregates(ticker, date_from: datetime.date, date_to: datetime.date, container: str = "etl/polygon/raw"):
+def load_aggregates_to_bronze(ticker, date_from: datetime.date, date_to: datetime.date, container: str = "etl/polygon/raw"):
     logger = pf.get_run_logger()
     client = get_polygon_client()
     daily_aggs = get_daily_data(ticker, date_from, date_to, client)
@@ -64,4 +65,4 @@ def get_aggregates(ticker, date_from: datetime.date, date_to: datetime.date, con
 
 
 if __name__=="__main__":
-    get_aggregates.serve(name="get-aggregates")
+    load_aggregates_to_bronze.serve(name="get-aggregates")

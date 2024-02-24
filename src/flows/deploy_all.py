@@ -11,5 +11,5 @@ if __name__ == "__main__":
     pf.serve(
         save_prefect_secret.to_deployment(name="save-prefect-secret"),
         github_stats.get_deployment(),
-        get_aggregates.get_aggregates.to_deployment(name="get-aggregates"),
+        get_aggregates.load_aggregates_to_bronze.to_deployment(name="get-aggregates"),
     )
