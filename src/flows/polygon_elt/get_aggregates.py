@@ -2,6 +2,7 @@ import json
 
 import prefect as pf
 from polygon_api.client import get_polygon_client
+from prefect_etl.storage_config import MinIOCredentials
 import datetime
 import datetime
 from polygon import RESTClient
@@ -32,13 +33,13 @@ raw_fs = s3fs.S3FileSystem(
 )
 
 
-pl_s3_delta_config = {
-    "endpoint": "http://localhost:9000",
-    "access_key_id": pfbs.Secret.load("minio-access-key").get(),
-    "secret_access_key": pfbs.Secret.load("minio-secret-key").get(),
-    "region": "us-east-1",
-    "allow_http": "true",
-}
+# pl_s3_delta_config = {
+#     "endpoint": "http://localhost:9000",
+#     "access_key_id": pfbs.Secret.load("minio-access-key").get(),
+#     "secret_access_key": pfbs.Secret.load("minio-secret-key").get(),
+#     "region": "us-east-1",
+#     "allow_http": "true",
+# }
 
 # Bronze
 
@@ -88,8 +89,11 @@ def aggregates_raw_to_bronze(ticker, date_from: datetime.date, date_to: datetime
 
 @pf.task
 def aggregates_load_bronze(ticker, date_from, date_to, container="etl/polygon/raw"):
+    minio_credentials = MinIOCredentials.load("minio_credentials")
+
     return pl.scan_parquet(
         bronze_query_parameters_to_path(ticker, date_from, date_to, container),
+        access_key_id=minio_credentials.aws
         **pl_s3_delta_config
     )
 
