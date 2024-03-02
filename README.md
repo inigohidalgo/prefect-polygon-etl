@@ -44,5 +44,5 @@ prefect deployment run save-minio-credentials/save-minio-credentials --param min
 Manually trigger the flow `get-aggregates` for a certain date range and ticker.
 ```bash
 # this prefect can be from any other venv/pipx
-prefect deployment run load-aggregates-to-bronze/get-aggregates --param ticker=GE --param date_from=2021-01-01 --param date_to=2022-12-31
+prefect deployment run aggregates-raw-to-silver/aggregates-raw-to-silver --param ticker=GE --param date_from=2021-01-01 --param date_to=2022-12-31
 ```
