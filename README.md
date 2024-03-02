@@ -14,11 +14,13 @@ This should set up a deployment in the server which will query the number of sta
 
 ## Deploy flows
 
-`python src/flows/deploy_all.py`
-
-## Polygon ELT
-
 ### Set up credentials
+
+`python src/flows/environment/__init__.py`
+
+This will create 2 flows, `save_prefect_secret` and `save_minio_credentials`.
+
+#### Polygon
 
 Sign up for an account at polygon.io and set up an API key.
 
@@ -27,7 +29,17 @@ Run the flow and save a secret with name `polygon-api-key` and the value of your
 prefect deployment run save-prefect-secret/save-prefect-secret --param secret_name=polygon-api-key --param secret_value=$POLYGON_API_KEY
 ```
 
-### Run the flow
+
+#### Minio
+
+Get your minio credentials and run the flow to save them as secrets.
+```bash
+prefect deployment run save-minio-credentials/save-minio-credentials --param minio_access_key=$MINIO_ACCESS_KEY --param minio_secret_key=$MINIO_SECRET_KEY --param host=http://localhost:9000
+```
+
+### Set up deployments
+
+`python src/flows/deploy_all.py`
 
 Manually trigger the flow `get-aggregates` for a certain date range and ticker.
 ```bash
