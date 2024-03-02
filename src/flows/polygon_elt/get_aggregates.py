@@ -64,9 +64,20 @@ def aggregates_save_bronze(daily_aggs_pl, ticker, date_from, date_to, container:
 
     )
     return save_path
+import time
+
+@pf.flow
+def aggregates_from_list_of_tickers_raw_to_bronze(tickers: list[str], date_from: datetime.date, date_to: datetime.date, container: str = "etl/polygon/raw", api_calls_per_second: int = 1):
+    
+    for ticker in tickers:
+        _ = aggregates_raw_to_bronze(ticker, date_from, date_to, container)
+        time.sleep(1/api_calls_per_second) # sub-optimal
+    
+    pf.get_run_logger().info(f"Loaded {len(tickers)} tickers successfully")
 
 @pf.flow
 def aggregates_raw_to_bronze(ticker, date_from: datetime.date, date_to: datetime.date, container: str = "etl/polygon/raw"):
+    pf.get_run_logger().info(f"Saving BRONZE daily aggregates for {ticker} from {date_from} to {date_to}")
     daily_aggs = aggregates_load_raw_and_transform_to_bronze(ticker, date_from, date_to, container)
     save_path = aggregates_save_bronze(daily_aggs, ticker, date_from, date_to, container)
     return daily_aggs
