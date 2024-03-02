@@ -18,28 +18,12 @@ os.environ["AWS_S3_ALLOW_UNSAFE_RENAME"] = "true"
 class BronzeConstants(Enum):
     TIMESTAMP_INSERTION_COLUMN = "ingestion_timestamp"
 
-
+MINIO_CREDENTIAL_SECRET_KEY = "minio-credentials"
 # Config
 
 def get_daily_data(ticker, date_from, date_to, client: RESTClient):
     return client.get_aggs(ticker, 1, "day", date_from, date_to)
 
-
-
-raw_fs = s3fs.S3FileSystem(
-    key=pfbs.Secret.load("minio-access-key").get(),
-    secret=pfbs.Secret.load("minio-secret-key").get(),
-    client_kwargs={"endpoint_url": "http://localhost:9000"},
-)
-
-
-# pl_s3_delta_config = {
-#     "endpoint": "http://localhost:9000",
-#     "access_key_id": pfbs.Secret.load("minio-access-key").get(),
-#     "secret_access_key": pfbs.Secret.load("minio-secret-key").get(),
-#     "region": "us-east-1",
-#     "allow_http": "true",
-# }
 
 # Bronze
 
@@ -76,7 +60,7 @@ def aggregates_save_bronze(daily_aggs_pl, ticker, date_from, date_to, container:
     daily_aggs_pl.write_parquet(
         save_path,
         use_pyarrow=True,
-        pyarrow_options={"filesystem": raw_fs},
+        pyarrow_options={"filesystem": MinIOCredentials.load(MINIO_CREDENTIAL_SECRET_KEY).s3fs},
 
     )
     return save_path
@@ -89,12 +73,11 @@ def aggregates_raw_to_bronze(ticker, date_from: datetime.date, date_to: datetime
 
 @pf.task
 def aggregates_load_bronze(ticker, date_from, date_to, container="etl/polygon/raw"):
-    minio_credentials = MinIOCredentials.load("minio_credentials")
+    minio_credentials = MinIOCredentials.load(MINIO_CREDENTIAL_SECRET_KEY)
 
     return pl.scan_parquet(
         bronze_query_parameters_to_path(ticker, date_from, date_to, container),
-        access_key_id=minio_credentials.aws
-        **pl_s3_delta_config
+        **minio_credentials.rust_s3_kwargs,
     )
 
 # Silver
@@ -108,16 +91,17 @@ def aggregates_transform_bronze_to_silver(aggregates):
 def aggregates_save_silver(aggregates, ticker, date_from, date_to, container: str = "etl/polygon/silver"):
     s3_path_silver = f"s3://{container}/daily_aggs/"
     pf.get_run_logger().info(f"Saving {len(aggregates)} records to {s3_path_silver}")
+    minio_credentials = MinIOCredentials.load(MINIO_CREDENTIAL_SECRET_KEY)
     try:
-        dt = DeltaTable(s3_path_silver, storage_options=pl_s3_delta_config)
+        dt = DeltaTable(s3_path_silver, storage_options=minio_credentials.rust_s3_kwargs)
         upsert(aggregates.to_arrow(), dt, ["ticker", "timestamp"])
         pf.get_run_logger().info(f"Upserted {len(aggregates)} records to {s3_path_silver}")
     except Exception as e:
         if "no log files" in str(e):
             logger = pf.get_run_logger()
             logger.info("No log files found, creating new DeltaTable")
-            write_deltalake(s3_path_silver, storage_options=pl_s3_delta_config, data=aggregates.to_arrow())
-            dt = DeltaTable(s3_path_silver, storage_options=pl_s3_delta_config)
+            write_deltalake(s3_path_silver, storage_options=minio_credentials.rust_s3_kwargs, data=aggregates.to_arrow())
+            dt = DeltaTable(s3_path_silver, storage_options=minio_credentials.rust_s3_kwargs)
     return dt
 
 
