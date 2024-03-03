@@ -41,6 +41,10 @@ prefect deployment run save-minio-credentials/save-minio-credentials --param min
 
 `python src/flows/deploy_all.py`
 
+Save the following block:
+
+JSON / polygon-daily-aggregates-tickers - ["AAPL", "MSFT"...]
+
 Manually trigger the flow `get-aggregates` for a certain date range and ticker.
 ```bash
 # this prefect can be from any other venv/pipx
