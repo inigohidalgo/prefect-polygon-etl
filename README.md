@@ -6,19 +6,12 @@ Setup
 
 https://github.com/inigohidalgo/prefect-server-docker
 
-### Verify installation
-
-`python src/flows/examples/github_stats.py`
-
-This should set up a deployment in the server which will query the number of stars in a repo.
 
 ## Deploy flows
 
+`python src/polygon_etl/flows/deploy_all.py`
+
 ### Set up credentials
-
-`python src/flows/environment/__init__.py`
-
-This will create 2 flows, `save_prefect_secret` and `save_minio_credentials`.
 
 #### Polygon
 
@@ -28,7 +21,6 @@ Run the flow and save a secret with name `polygon-api-key` and the value of your
 ```bash
 prefect deployment run save-prefect-secret/save-prefect-secret --param secret_name=polygon-api-key --param secret_value=$POLYGON_API_KEY
 ```
-
 
 #### Minio
 

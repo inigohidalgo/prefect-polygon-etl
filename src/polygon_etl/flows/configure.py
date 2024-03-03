@@ -2,7 +2,7 @@ import prefect as pf
 from typing import Optional
 import prefect.blocks as pfbs
 from pydantic import SecretStr
-from prefect_etl.storage_config import MinIOCredentials
+from polygon_etl.config.storage import MinIOCredentials
 
 @pf.flow
 def save_prefect_secret(secret_name: str, secret_value: str):
