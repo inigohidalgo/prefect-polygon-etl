@@ -41,7 +41,7 @@ def transform_raw_aggregations_to_bronze(aggregations: list[Agg], ticker: str):
     )
 
 
-@pf.task
+@pf.task(retries=1, retry_delay_seconds=60)
 def aggregates_load_raw_and_transform_to_bronze(
     ticker,
     date_from: datetime.date,
@@ -112,7 +112,6 @@ def aggregates_from_list_of_tickers_raw_to_bronze(tickers: list[str], date_from:
     
     for ticker in tickers:
         aggregates_raw_to_bronze(ticker, date_from, date_to, container)
-        time.sleep(1/api_calls_per_second) # sub-optimal
     
     pf.get_run_logger().info(f"Loaded {len(tickers)} tickers successfully")
 
