@@ -8,8 +8,8 @@ import prefect as pf
 import prefect.blocks.system as pfbs
 import time
 
-from polygon_api.client import get_polygon_client
-from prefect_etl.storage_config import MinIOCredentials, MINIO_CREDENTIAL_SECRET_KEY
+from prefect_etl_config.polygon_client import get_polygon_client
+from prefect_etl_config.storage_config import MinIOCredentials, MINIO_CREDENTIAL_SECRET_KEY
 
 
 class Constants(Enum):

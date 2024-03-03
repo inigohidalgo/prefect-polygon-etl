@@ -4,7 +4,7 @@ import prefect as pf
 from deltalake import DeltaTable, write_deltalake
 
 from delta_rs_etl.upsert import upsert
-from prefect_etl.storage_config import MinIOCredentials, MINIO_CREDENTIAL_SECRET_KEY
+from prefect_etl_config.storage_config import MinIOCredentials, MINIO_CREDENTIAL_SECRET_KEY
 
 
 
