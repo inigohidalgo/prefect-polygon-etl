@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 import polars as pl
 from polygon import RESTClient
-from polygon.rest.models import GroupedDailyAgg, Agg
+from polygon.rest.models import Agg
 import datetime
 import prefect as pf
 import prefect.blocks.system as pfbs
