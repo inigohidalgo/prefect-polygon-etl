@@ -108,26 +108,47 @@ def aggregates_raw_to_bronze(
 
 
 @pf.flow
-def aggregates_from_list_of_tickers_raw_to_bronze(tickers: list[str], date_from: datetime.date, date_to: datetime.date, container: str = "etl/polygon/raw", api_calls_per_second: int = 1):
-    
+def aggregates_from_list_of_tickers_raw_to_bronze(
+    tickers: list[str],
+    date_from: datetime.date,
+    date_to: datetime.date,
+    container: str = "etl/polygon/raw",
+    api_calls_per_minute: int = 5,
+):
+    logger = pf.get_run_logger()
+    time_start = time.monotonic()
+    n_calls = 0
     for ticker in tickers:
+        logger.info("Loading daily aggregates for {ticker}")
         aggregates_raw_to_bronze(ticker, date_from, date_to, container)
-        time.sleep(1/api_calls_per_second) # sub-optimal
-    
-    pf.get_run_logger().info(f"Loaded {len(tickers)} tickers successfully")
+        n_calls += 1
+        if n_calls >= api_calls_per_minute:
+            time_end = time.monotonic()
+            time_elapsed = time_end - time_start
+            if time_elapsed < 60:
+                logger.info(
+                    f"Exceeded {api_calls_per_minute} calls per minute. Sleeping for {60 - time_elapsed} seconds"
+                )
+                time.sleep(60 - time_elapsed)
+                time_elapsed = 0
+                n_calls = 0
+
+    logger.info(f"Loaded {len(tickers)} tickers successfully")
+
 
 @pf.flow
 def get_aggregates_from_preconfigured_list_of_tickers_raw_to_bronze(
     tickers: Optional[list[str]] = None,
     n_days_back: int = 30,
     container: Optional[str] = "etl/polygon/raw",
-    api_calls_per_second: Optional[int] = 1,
+    api_calls_per_minute: Optional[int] = 5,
 ):
-    
     tickers = tickers or pfbs.JSON.load("polygon-daily-aggregates-tickers").value
     date_to = datetime.date.today() - datetime.timedelta(days=1)
     date_from = date_to - datetime.timedelta(days=n_days_back)
-    aggregates_from_list_of_tickers_raw_to_bronze(tickers, date_from, date_to, container, api_calls_per_second)
+    aggregates_from_list_of_tickers_raw_to_bronze(
+        tickers, date_from, date_to, container, api_calls_per_minute
+    )
 
 
 if __name__ == "__main__":
