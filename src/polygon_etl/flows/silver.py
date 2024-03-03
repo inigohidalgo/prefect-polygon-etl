@@ -4,11 +4,10 @@ import prefect as pf
 from deltalake import DeltaTable, write_deltalake
 
 from delta_rs_etl.upsert import upsert
-from prefect_etl_config.storage_config import MinIOCredentials, MINIO_CREDENTIAL_SECRET_KEY
+from polygon_etl.config.storage import MinIOCredentials, MINIO_CREDENTIAL_SECRET_KEY
 
 
-
-from flows.polygon_elt.bronze import aggregates_load_bronze, aggregates_raw_to_bronze
+from polygon_etl.flows.bronze import aggregates_load_bronze, aggregates_raw_to_bronze
 
 
 @pf.task
