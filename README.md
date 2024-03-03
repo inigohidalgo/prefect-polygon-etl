@@ -4,7 +4,7 @@ Setup
 
 ## Start prefect server
 
-\#TODO
+https://github.com/inigohidalgo/prefect-server-docker
 
 ### Verify installation
 
