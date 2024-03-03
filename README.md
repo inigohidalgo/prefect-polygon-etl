@@ -45,8 +45,9 @@ Save the following block:
 
 JSON / polygon-daily-aggregates-tickers - ["AAPL", "MSFT"...]
 
-Manually trigger the flow `get-aggregates` for a certain date range and ticker.
+Run the flow:
 ```bash
-# this prefect can be from any other venv/pipx
-prefect deployment run aggregates-raw-to-silver/aggregates-raw-to-silver --param ticker=GE --param date_from=2021-01-01 --param date_to=2022-12-31
+prefect deployment run get-aggregates-from-preconfigured-list-of-tickers-raw-to-bronze/daily-aggregates-raw-to-bronze-multiple-tickers
 ```
+
+This will load the data from the list of tickers into the bronze bucket.
