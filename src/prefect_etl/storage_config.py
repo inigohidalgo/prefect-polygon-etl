@@ -3,6 +3,8 @@ from prefect.blocks.core import Block
 from pydantic import SecretStr
 import s3fs
 
+MINIO_CREDENTIAL_SECRET_KEY = "minio-credentials"
+
 
 class MinIOCredentials(Block):
     aws_access_key_id: Optional[SecretStr] = None
