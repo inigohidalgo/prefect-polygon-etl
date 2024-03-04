@@ -111,8 +111,17 @@ def aggregates_raw_to_bronze(
 def aggregates_from_list_of_tickers_raw_to_bronze(tickers: list[str], date_from: datetime.date, date_to: datetime.date, container: str = "etl/polygon/raw", api_calls_per_second: int = 1):
     
     for ticker in tickers:
-        aggregates_raw_to_bronze(ticker, date_from, date_to, container)
-    
+        try:
+            aggregates_raw_to_bronze(ticker, date_from, date_to, container)
+        except Exception as e:
+            if continue_on_error:
+                pf.get_run_logger().error(
+                    f"Error while processing {ticker}: {e}. Continuing..."
+                )
+                continue
+            else:
+                raise e
+
     pf.get_run_logger().info(f"Loaded {len(tickers)} tickers successfully")
 
 @pf.flow
@@ -126,7 +135,9 @@ def get_aggregates_from_preconfigured_list_of_tickers_raw_to_bronze(
     tickers = tickers or pfbs.JSON.load("polygon-daily-aggregates-tickers").value
     date_to = datetime.date.today() - datetime.timedelta(days=1)
     date_from = date_to - datetime.timedelta(days=n_days_back)
-    aggregates_from_list_of_tickers_raw_to_bronze(tickers, date_from, date_to, container, api_calls_per_second)
+    aggregates_from_list_of_tickers_raw_to_bronze(
+        tickers, date_from, date_to, container, continue_on_error=True
+    )
 
 
 if __name__ == "__main__":
